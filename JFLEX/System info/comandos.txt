@@ -1,0 +1,8 @@
+Step 1:
+jflex ./especificacao.flex
+
+Step 2:
+javac ./especificacao.java
+
+Step 3:
+java ./especificacao_class ./especificacao_codigo_fonte.txt
