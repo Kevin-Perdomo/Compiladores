@@ -1,0 +1,17 @@
+Step 1: 
+java -jar jflex-full-1.9.1.jar ./especificacao.jflex
+
+Step 2:
+java -jar java-cup-11b.jar -parser Parser ./especificacao.cup
+
+Step 3:
+(CMD Version for .bat)
+javac -Xlint -d ./src/ -classpath .;java-cup-11b-runtime.jar *.java
+|
+OR
+|
+(Windows PowerShell Version)
+javac -Xlint -d ./src/ -classpath .:java-cup-11b-runtime.jar *.java
+
+Step 4:
+java -cp .;java-cup-11b-runtime.jar Main ./especificacao.txt
