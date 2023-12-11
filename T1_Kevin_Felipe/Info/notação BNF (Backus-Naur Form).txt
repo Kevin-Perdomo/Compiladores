@@ -1,0 +1,42 @@
+---------------------------------------------------------------------------------------------------
+
+"The Guns are to say that we fought, and the Roses are to say that we won."
+
+---------------------------------------------------------------------------------------------------
+
+Trabalho T1: Compiladores;
+Linguagem de Programação: G&R (Guns N' Roses);
+Desenvolvida por: Kevin Siqueira Perdomo e Felipe Soares Gonçalves;
+Curso: Bacharelado em Engenharia De Computação;
+
+---------------------------------------------------------------------------------------------------
+
+[Notação BNF]
+
+<bloco comandos> ::= <inicio bloco> <comandos> <fim bloco>
+<inicio bloco> ::= Guns
+<fim bloco> ::= Roses
+<comandos> ::= <comando if> | <declaracao de variavel> | <atribuicao de
+variavel> | <expressao aritmetica>
+<comando if> ::= if ( <expressao> ) <bloco comandos> | if ( <expressao> ) <bloco
+comandos> else <bloco comandos>
+<declaracao de variavel> ::= <tipo> <identificador> { , <identificador> }
+<atribuicao de variavel> ::= <identificador> = <expressao aritmetica simples> |
+<identificador> = <expressao aritmetica>
+<expressao aritmetica> ::= <expressao aritmetica simples> | <expressao
+aritmetica simples> <operador aritmetico> <expressao aritmetica simples>
+<expressao aritmetica simples> ::= <sinal> <numero>
+<expressao> ::= <expressao simples> | <expressao simples> <operador
+relacional> <expressao simples>
+<expressao simples> ::= <sinal> <identificador>
+<identificador> ::= <letra> | <identificador> <letra> | <identificador> <digito>
+<numero> ::= <digito> | <digito> <numero> | <sinal> <numero> |
+<numero>.<numero>
+<tipo> ::= int | float | char | string
+<letra> ::= a | b | c | ... | z | A | B | C | ... | Z
+<operador relacional> ::= == | <> | < | <= | >= | >
+<operador aritmetico> ::= + | - | * | /
+<digito> ::= 0 | 1 | ... | 9
+<sinal> ::= + | - | <vazio>
+
+---------------------------------------------------------------------------------------------------

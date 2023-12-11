@@ -1,0 +1,16 @@
+3+1;
+5-1;
+2*6;
+9/3;
+8%2;
+	
+int i;
+i=5;
+
+if (i==5)
+guns
+	print(se);
+roses else 
+	  guns
+	  	print(entao);
+	  roses
