@@ -1,13 +1,25 @@
+//CUP (Constructor of Useful Parsers)
+
 import java_cup.runtime.*;
+
+/*Essa biblioteca fornece classes e estruturas de dados que são necessárias 
+para o funcionamento do analisador gerado. Importar todas as classes usando 
+import java_cup.runtime.*; simplifica o código, pois permite que você use as 
+classes da biblioteca sem ter que especificar cada uma delas separadamente.*/
 
 parser code {:
     public void syntax_error(java_cup.runtime.Symbol currToken) {
-        System.out.println("You're crazy, it's so easy: " + "Linha: " + (currToken.left+1) + " Coluna: " + (currToken.right+1));
+        System.out.println("You're crazy, it's so easy: " 
+        + "Linha: " + (currToken.left+1) + " Coluna: " + (currToken.right+1));
     }
 :}
 
+/*Descreve as regras de produção para uma linguagem de programação fictícia. 
+Cada regra define como expressões, instruções e comandos devem ser estruturados. 
+Durante a análise sintática (parser), o código adicional fornece um tratamento 
+de erro simples para imprimir mensagens úteis quando ocorrem erros sintáticos.*/
 
-/* terminais. */
+/*Terminais*/
 terminal            VIRGULA, FECHA_COMANDO, ABRE_COLCHETE, FECHA_COLCHETE, ABRE_PARENTESES, FECHA_PARENTESES, ABRE_BLOCO, FECHA_BLOCO;
 terminal            MAIS, MENOS, MULTIPLICACAO, DIVISAO, MAIOR_QUE, MENOR_QUE, RESTO;
 terminal            ATRIBUICAO, EQUIVALENCIA, E, OU, OU_EXCLUSIVO, NEGACAO;
@@ -17,7 +29,7 @@ terminal            DECIMAL ,BOOLEANO , INTEIRO, CARACTER, STRING;//string é ap
 terminal            IDENTIFICADOR;
 terminal            CONTINUAR, PARAR, RETORNAR;
 
-/* Non terminals */
+/*Não terminals*/
 non terminal           unidade_de_compilacao;
 non terminal           especificador_tipo;
 non terminal           declaracao, expressao, expressao_atribuicao;
@@ -28,14 +40,22 @@ non terminal           expressao_aditiva,expressao_multiplicativa;
 non terminal           instrucao, bloco_instrucao, instrucao_se, instrucao_iterativa, instrucao_pulo, instrucao_composta;
 non terminal           comando, comando_escreva, comando_guarda;
 
-/* Precedences */
+/*Precedências*/
 precedence left OU_EXCLUSIVO;
 precedence left E, MAIS, MENOS;
 precedence left OU, MULTIPLICACAO, DIVISAO;
 precedence nonassoc NEGACAO, MENOR_QUE, MAIOR_QUE, EQUIVALENCIA;
 
-/* Regras */
+/*As declarações de precedência em um arquivo .cup são usadas para resolver ambiguidades 
+na gramática e indicar a ordem de avaliação dos operadores em expressões.*/
 
+/*precedence left: Indica que os operadores listados à direita têm uma precedência 
+menor do que os operadores à sua esquerda.*/
+
+/*precedence nonassoc: Indica que os operadores listados não são associativos entre si, Ou seja, 
+expressões ambíguas resultarão em um erro de redução.*/
+
+/*Regras*/
 unidade_de_compilacao ::= declaracao unidade_de_compilacao
                         | instrucao unidade_de_compilacao
                         | instrucao_composta unidade_de_compilacao
@@ -71,15 +91,18 @@ constante ::=   CARACTER
               | DECIMAL 
               | BOOLEANO
               ;
-                
+
+/*Operações Lógicas*/               
 expressao_condicional ::= expressao_ou ;
 
 expressao_ou ::= expressao_e
-				 | expressao_ou OU expressao_e {: System.out.println("Expressao logica OU encontrada \n "); :}
+				 | expressao_ou OU expressao_e 
+                 {: System.out.println("Expressao logica OU encontrada \n "); :}
                  ;
 
 expressao_e ::= expressao_ou_exclusivo
-			      | expressao_e E expressao_ou_exclusivo {: System.out.println("Expressao logica E encontrada \n "); :}
+			      | expressao_e E expressao_ou_exclusivo 
+                  {: System.out.println("Expressao logica E encontrada \n "); :}
                   ;
 
 expressao_ou_exclusivo ::= expressao_equalidade
@@ -105,6 +128,7 @@ expressao_relacional ::= expressao_aditiva
                          {: System.out.println("Expressao relacional '>=' encontrada \n "); :}
                          ;
 
+/*Operações Aritméticas*/
 expressao_aditiva ::= expressao_multiplicativa
                       | expressao_aditiva MAIS expressao_multiplicativa 
                       {: System.out.println("Expressao aritmetica de ADICAO encontrada \n "); :}
@@ -125,11 +149,12 @@ expressao_primaria ::= IDENTIFICADOR
 
                        | constante
                        ;
-/*adaptado de "instrucao_composta ::= { declaracao* instrucao* }" verificar equivalencia dps */
+
+/*Instruções e Comandos*/
 instrucao_composta ::= ABRE_BLOCO bloco_instrucao FECHA_BLOCO
                      ;
 
-bloco_instrucao ::= /* empty */
+bloco_instrucao ::= /*empty*/
                   | declaracao bloco_instrucao
                   | instrucao bloco_instrucao
                   ;
@@ -147,7 +172,7 @@ instrucao_se ::= SE ABRE_PARENTESES expressao_condicional FECHA_PARENTESES instr
                {: System.out.println("Fim da Instrucao SE SE_NAO\n "); :}
                ;
 
-/*aqui o for aparece 4x porque o expressao condicional e expressao sao opcionais*/
+/*Instruções Iterativas*/
 instrucao_iterativa ::= ENQUANTO ABRE_PARENTESES expressao_condicional FECHA_PARENTESES instrucao_composta 
 {: System.out.println("Fim do Comando ENQUANTO\n "); :}
                     | PARA ABRE_PARENTESES expressao_atribuicao FECHA_COMANDO expressao_condicional FECHA_COMANDO expressao FECHA_PARENTESES instrucao_composta 
@@ -159,12 +184,14 @@ instrucao_iterativa ::= ENQUANTO ABRE_PARENTESES expressao_condicional FECHA_PAR
                     | PARA ABRE_PARENTESES expressao_atribuicao FECHA_COMANDO FECHA_COMANDO FECHA_PARENTESES instrucao_composta 
                     {: System.out.println("Fim do Comando PARA \n "); :}
                     ;
-                        
+
+/*Instruções de Pulo*/                      
 instrucao_pulo ::=   CONTINUAR FECHA_COMANDO
                    | PARAR FECHA_COMANDO
                    | RETORNAR expressao FECHA_COMANDO
                    ;
 
+/*Comandos*/
 comando ::= comando_escreva | comando_guarda ;
 
 comando_escreva ::= ESCREVA ABRE_PARENTESES IDENTIFICADOR FECHA_PARENTESES FECHA_COMANDO
