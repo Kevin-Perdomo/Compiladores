@@ -1,5 +1,4 @@
 import java_cup.runtime.*;
-
 /*Essa biblioteca fornece classes e estruturas de dados que são necessárias 
 para o funcionamento do analisador gerado. Importar todas as classes usando 
 import java_cup.runtime.*; simplifica o código, pois permite que você use as 
@@ -33,7 +32,6 @@ classes da biblioteca sem ter que especificar cada uma delas separadamente.*/
 %eof{ 
   System.out.println("Welcome to the Jungle!!"); 
 %eof}
-
 /*A parte comentada %eof{ ... %eof} em um arquivo JFlex 
 está relacionada ao tratamento de fim de arquivo (End Of File)*/
 
@@ -43,6 +41,7 @@ boolean = true | false
 float = [:digit:]* "." [:digit:]+;
 char = ([:jletter:] | [digit]); 
 inteiro = [0-9][0-9]*
+//inteir negativo = 0 | ("(-)" [1-9][0-9]*) | [1-9][0-9]*
 
 %state STRING
 //O estado <STRING> é usado para lidar com strings e inclui regras para escape de caracteres

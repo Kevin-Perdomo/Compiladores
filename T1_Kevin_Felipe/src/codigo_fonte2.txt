@@ -1,14 +1,11 @@
-2*6;
+3+1;
+5-2;
+-2*6;
 9/3;
 8%2;
-	
+
 int i;
 i=5;
-
-if (i==5){
-
-  print(se);
-
-} else{
-        print(entao);
-      }
+int a;
+print(a);
+scan (a);
