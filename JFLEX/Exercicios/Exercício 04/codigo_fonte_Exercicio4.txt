@@ -1,0 +1,11 @@
+"Av. 28 de marco, 432"
+329
+-521
+82.77
+-34.56
+int x = 8
+float media, area1, area432teste, b1, c200
+{
+int numero
+}
+
