@@ -1,0 +1,11 @@
+program
+
+char letra;
+float preco;
+str titulo;
+
+ano = 2020;
+preco = "abcde";
+letra = "abcde";
+
+end

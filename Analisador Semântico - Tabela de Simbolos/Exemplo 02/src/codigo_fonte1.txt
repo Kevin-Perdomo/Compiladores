@@ -1,0 +1,15 @@
+program
+
+int ano;
+char letra;
+float preco;
+str titulo;
+
+ano = 2020;
+preco = 6.80;
+titulo = "Teste";
+letra = "a";
+
+printf("Oi");
+
+end

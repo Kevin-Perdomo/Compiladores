@@ -1,0 +1,174 @@
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.*;
+
+
+action code
+{:
+	Analisadorsemantico analisadorsemantico = new Analisadorsemantico();
+	Tabelasimbolos tabelasimbolos = new Tabelasimbolos();
+	String tipo_identificador = new String();
+:};
+
+parser code {:
+
+public void syntax_error(java_cup.runtime.Symbol currToken) {
+      System.out.println("Erro de sintaxe na linha: "+(currToken.left+1));
+}
+
+:};
+
+
+
+terminal           LPR, RPR, LBR, RBR;
+terminal           SEMI, PLUS, MINUS, TIMES, DIVIDE, MOD, ASSIGN;
+terminal           IDENT;
+terminal           ELSE, IF;	
+terminal           GEQ, LEQ, NEQ, EQ; 
+terminal           LESS, GRAT;
+terminal           WHILE, FOR;
+
+terminal           NUMBER, FLOATNUMBER, STRING, CHARACTER;
+terminal           INT, STR, CHAR, FLOAT;
+terminal           PRINTF, SCANF;
+terminal 		       PROGRAM, END;
+
+
+non terminal            expr;
+non terminal            boolexpr;
+non terminal            type;
+non terminal            data;
+non terminal			StmtList, stmt, begin;
+
+
+precedence left LPR, RPR, LBR, RBR;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE, MOD;
+precedence left LESS, LEQ, GRAT, GEQ, NEQ, EQ;
+precedence left ASSIGN;
+
+begin ::= PROGRAM StmtList END;
+StmtList ::=  StmtList  stmt:s
+			  {: System.out.println(s); :}
+	     |
+			  stmt:s {: System.out.println(s); :};
+			
+expr      ::= expr:e1 PLUS expr:e2                
+	      {: RESULT = "Adicao -> " + e1 + "+" + e2; :} 
+	      | 
+              expr:e1 MINUS expr:e2                
+              {: RESULT = "Subtracao -> " + e1 + "-" + e2; :} 
+	      | 
+              expr:e1 TIMES expr:e2             
+	      {: RESULT = "Multiplicacao -> " + e1 + "*" + e2; :} 
+	      | 
+              expr:e1 DIVIDE expr:e2              
+	      {: RESULT = "Divisao -> " + e1 + "/" + e2; :} 
+	      | 
+              expr:e1 MOD expr:e2 
+	      {: RESULT = "Resto -> " + e1 + "%" + e2; :} 
+	      | 
+            data:n                 
+	      {: RESULT = n; :}
+	       |
+			LPR expr:e RPR 
+	      {: RESULT = e; :}
+		  |
+		    IDENT:e1          
+		  {: RESULT = e1; :}
+			 
+		  ;
+          
+stmt 	  ::= type:e1 IDENT:e2 SEMI
+              {: tabelasimbolos.inserir_simbolo(e2, e1);
+                 RESULT = "DECLARACAO DE VARIAVEL [" + e2 + "]  do tipo: " + e1;
+              :} 
+              |
+              IDENT:e1 ASSIGN data:e2 SEMI
+              {: tipo_identificador = tabelasimbolos.consultar_tipo_identificador(e1);
+                 if (tipo_identificador != "") {
+                     if (analisadorsemantico.verificar_atribuicao(e1, e2, tipo_identificador))
+                        RESULT = "ERRO SEMANTICO";
+                     else
+                        RESULT = "ATRIBUICAO: [" + e1 + "]  recebe " + e2;
+                  }
+              :} 
+              |
+			  IDENT:e1 ASSIGN LPR expr:e2 RPR SEMI
+			  {: tipo_identificador = tabelasimbolos.consultar_tipo_identificador(e1);
+                 if (tipo_identificador != "") {
+                     if (analisadorsemantico.verificar_atribuicao(e1, e2, tipo_identificador))
+                        RESULT = "ERRO SEMANTICO";
+                     else
+                        RESULT = "ATRIBUICAO: [" + e1 + "]  recebe " + e2;
+                  }
+              :}
+			  |
+              PRINTF LPR data:e1 RPR SEMI
+              {: RESULT = "COMANDO PRINTF, ARGUMENTO: " + e1; :}
+              |
+              SCANF LPR RPR SEMI
+              {: RESULT = "COMANDO SCANF"; :}
+              |
+			  IF LPR boolexpr:e1 RPR LBR stmt:s RBR ELSE LBR stmt:s1 RBR SEMI 
+	          {: RESULT = "COMANDO IF ELSE: se a condicao " + e1 + " for verdadeira EXECUTA: " + s + ", senao: " + s1; :}
+              |
+              WHILE LPR boolexpr:e1 RPR LBR stmt:s RBR SEMI
+              {: RESULT = "COMANDO WHILE, CONDICAO: " + e1 + ", EXECUTA: "  + s; :}
+              |
+              FOR LPR IDENT:e1 ASSIGN NUMBER:e2 SEMI boolexpr:e3 SEMI NUMBER:e4 RPR LBR stmt:s RBR SEMI
+              {: RESULT = "COMANDO FOR: contador: " + e1 + "=" + e2 + ", CONDICAO:" + e3 + ", incremento: " + e1 + " + " + e4 + ", EXECUTA: " + s; :}
+              |
+			  error
+              ;
+
+
+boolexpr   ::= expr:e1 LESS expr:e2
+               {: RESULT = e1 + "<" + e2; :}   
+               |
+               expr:e1 GRAT expr:e2
+               {: RESULT =  e1 + ">" + e2; :}
+               |
+               expr:e1 GEQ expr:e2
+               {: RESULT =  e1 + ">=" + e2; :}
+               |
+               expr:e1 LEQ expr:e2
+               {: RESULT =  e1 + "<=" + e2; :}
+               |
+               expr:e1 NEQ expr:e2
+               {: RESULT =  e1 + "!=" + e2; :}
+               |
+               expr:e1 EQ expr:e2
+               {: RESULT =  e1 + "==" + e2; :}
+			   |
+			   LPR boolexpr:e RPR
+			   {: RESULT = e;:}
+			   ;
+
+
+type       ::= INT
+               {: RESULT = "inteiro"; :}
+               |
+               STR
+               {: RESULT = "string"; :}  
+               |
+               CHAR
+               {: RESULT = "char"; :}  
+               |
+               FLOAT
+               {: RESULT = "float"; :}
+               ;
+
+
+data       ::= NUMBER:e1
+               {: RESULT = "" + e1; :}
+               |
+               FLOATNUMBER:e1    
+               {: RESULT = "" + e1; :}  
+               |
+               CHARACTER:e1
+               {: RESULT = "" + e1; :}
+               |
+               STRING:e1    
+               {: RESULT = "" + e1; :}
+               ;
