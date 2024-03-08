@@ -1,0 +1,13 @@
+int a;
+scan(a);
+if(a==2){
+ a=^;
+ char b;
+ b='a'; 
+ bool c;
+ c = a !< b;
+ if(c){
+  print("variavel de testes eh");
+  print(a); 
+ }
+}

@@ -1,0 +1,13 @@
+int a;
+a=3;
+scan(a);
+if(a==2)guns
+ int b;
+ b=4; 
+ bool c;
+ c = a < b;
+ if(c)guns
+  print("variavel de testes eh");
+  print(a); 
+ roses
+roses

@@ -1,0 +1,23 @@
+int i;
+int n;
+int r;
+int s;
+int a1;
+
+print("Digite o primeiro termo da PA: ");
+scan (a1);
+print("Digite o numero de termos da PA: ");
+scan (n);
+print("Digite a razao da PA: ");
+scan (r);
+
+s = 0;
+i = 1;
+while (i <= n) guns
+s=s+a1;
+a1=a1+r;
+i=i+1;
+roses
+
+print("Soma dos termos da PA: ");
+print (s);

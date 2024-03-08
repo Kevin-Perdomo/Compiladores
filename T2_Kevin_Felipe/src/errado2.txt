@@ -1,0 +1,6 @@
+int a;
+scan (a);
+int b;
+if(2 > a + b){
+	print(a);
+}

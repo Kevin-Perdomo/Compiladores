@@ -1,0 +1,14 @@
+int a;
+int b;
+int c;
+int d;
+float r;
+a = 5;
+scan (2);
+if (a = b){
+	r = a/b;
+} else {
+	c = b-d;	
+	d = a*c;
+	r = a/b-d+ b * c;
+}

@@ -1,0 +1,8 @@
+int a;
+scan (a);
+int b;
+b = 1;
+while (b <= a) guns
+	print(b);
+	b = b + 1;
+roses

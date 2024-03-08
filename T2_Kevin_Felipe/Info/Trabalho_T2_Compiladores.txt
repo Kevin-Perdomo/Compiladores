@@ -1,0 +1,31 @@
+Prezados(as) alunos(as),
+
+O trabalho abaixo deverá ser enviado até o dia 20/03/2024, terá valor 10,0 e pode ser feito em dupla. 
+Os arquivos do trabalho deverão ser encaminhados por email.
+A apresentação do trabalho será no dia 21/03/2024.
+
+A partir do trabalho que foi entregue na A1, no qual foi construído um analisador léxico e um analisador sintático utilizando 
+JFlex e CUP para uma linguagem fictícia, realize as atividades abaixo.
+
+1) Construa ações semânticas que possam verificar, pelo menos, três erros semânticos dentro do analisador sintático construído com o CUP.
+
+Alguns exemplos de erros semânticos são:
+a) Verificar se uma variável foi utilizada, mas não foi declarada.
+b) Verificar a compatibilidade de valores com os tipos de variáveis. Por exemplo, atribuir um número real a uma variável do tipo inteiro.
+c) Analisar o escopo de variáveis (locais e globais).
+d) Identificar erros nos operadores e operandos das expressões.
+e) Verificar a correspondência entre parâmetros atuais e formais.
+
+Obs: deverá ser criada uma classe em Java para representar o Analisador Semântico.
+Obs: deverá ser criada uma classe em Java para representar a Tabela de Símbolos.
+
+2) Construa a geração de código intermediário ou a geração de código Assembly para dois comandos da linguagem fictícia.
+
+Alguns exemplos de comandos da linguagem são: 
+a) printf
+b) scanf
+c) if - else
+d) for
+e) while
+
+Obs: deverá ser criada uma classe em Java para representar a Geração de Código.

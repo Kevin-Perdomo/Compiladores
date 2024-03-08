@@ -1,0 +1,228 @@
+/*
+Este código é uma especificação para um analisador sintático (parser) de nossa linguagem de programação.
+*/
+
+import java_cup.runtime.*;
+/*Essa biblioteca fornece classes e estruturas de dados que são necessárias 
+para o funcionamento do analisador gerado. Importar todas as classes usando 
+import java_cup.runtime.*; simplifica o código, pois permite que você use as 
+classes da biblioteca sem ter que especificar cada uma delas separadamente.*/
+
+import java.io.*;
+import java.util.*;
+
+action code
+{:
+	AnalisadorSemantico analisadorSemantico = new AnalisadorSemantico();
+	//Gerador gerador = new Gerador(); 
+:};
+
+parser code {:
+    public void syntax_error(java_cup.runtime.Symbol currToken) {
+         System.out.println("You're crazy, it's so easy: Erro Sintatico\n" 
+        + "Linha: " + (currToken.left) + " Coluna: " + (currToken.right));
+    }
+:};
+/*Descreve as regras de produção para uma linguagem de programação fictícia. 
+Cada regra define como expressões, instruções e comandos devem ser estruturados. 
+Durante a análise sintática (parser), o código adicional fornece um tratamento 
+de erro simples para imprimir mensagens úteis quando ocorrem erros sintáticos.*/
+
+/* terminais. */
+terminal            COMMA, SEMICOLON, PARENTHESES_OPEN, PARENTHESES_CLOSE, CURLY_BRACKET_OPEN, CURLY_BRACKET_CLOSE;
+terminal            ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, GREATER_THAN, LESS_THAN;
+terminal            EQ, EQEQ, AND, OR, XOR, NOT;
+terminal            INTEGER_KEYWORD, BOOLEAN_KEYWORD, CHARACTER_KEYWORD, FLOAT_KEYWORD;
+terminal            IF, ELSE, WHILE, FOR, PRINT, SCAN;
+terminal            FLOAT, BOOLEAN, INTEGER, CHAR, STRING;//string é apenas usado no print
+terminal            IDENTIFIER;
+terminal            CONTINUE, BREAK, RETURN;
+
+/* Non terminals */
+non terminal           unidade_de_compilacao;
+non terminal           especificador_tipo;
+non terminal           declaracao, expressao, expressao_atribuicao;
+non terminal           constante;
+non terminal           expressao_condicional, expressao_primaria;
+non terminal           expressao_or, expressao_and, expressao_xor,expressao_equalidade,expressao_relacional;
+non terminal           expressao_aditiva,expressao_multiplicativa;
+non terminal           instrucao, bloco_instrucao, instrucao_if, instrucao_iterativa, instrucao_pulo, instrucao_composta;
+non terminal           comando, comando_print, comando_scan;
+
+/* Precedences */
+precedence left XOR;
+precedence left AND, ADDITION, SUBTRACTION;
+precedence left OR, MULTIPLICATION, DIVISION;
+precedence nonassoc NOT, LESS_THAN, GREATER_THAN, EQEQ;
+
+/*As declarações de precedência em um arquivo .cup são usadas para resolver ambiguidades 
+na gramática e indicar a ordem de avaliação dos operadores em expressões.*/
+
+/*precedence left: Indica que os operadores listados à direita têm uma precedência 
+menor do que os operadores à sua esquerda.*/
+
+/*precedence nonassoc: Indica que os operadores listados não são associativos entre si, Ou seja, 
+expressões ambíguas resultarão em um erro de redução.*/
+
+start with unidade_de_compilacao;
+
+/* Regras */
+unidade_de_compilacao ::= unidade_de_compilacao declaracao:r {:if(r!=null){Gerador.gravarArquivo(r.toString());}:}
+                        | unidade_de_compilacao instrucao:r {:if(r!=null){Gerador.gravarArquivo(r.toString());}:}
+                        | unidade_de_compilacao instrucao_composta:r {:if(r!=null){Gerador.gravarArquivo(r.toString());}:}
+                        |
+                        ;
+
+especificador_tipo ::= INTEGER_KEYWORD {: RESULT = TipoVariavel.INT; :}
+                       | FLOAT_KEYWORD {: RESULT = TipoVariavel.FLOAT; :}
+                       | CHARACTER_KEYWORD {: RESULT = TipoVariavel.CHAR; :}
+                       | BOOLEAN_KEYWORD {: RESULT = TipoVariavel.BOOL; :}
+                       ;
+
+declaracao ::= especificador_tipo:tipo IDENTIFIER:var SEMICOLON 
+{:     
+    RESULT = analisadorSemantico.inserirSimbolo(var, (TipoVariavel)tipo, varleft, varright);
+:}
+               ;
+
+expressao ::= expressao_atribuicao:e {: RESULT = e; :}
+		      | expressao:e COMMA expressao_atribuicao:ea {: RESULT = e + "," + ea; :}
+              ;
+
+expressao_atribuicao ::= expressao_condicional:r SEMICOLON  {:RESULT = r;:}
+                         | IDENTIFIER:var EQ expressao_atribuicao:valor 
+{:
+    RESULT = analisadorSemantico.atribuirVariavel(var,(Expressao)valor, varleft, varright);
+:}
+                         ;
+
+constante ::= CHAR:c {: RESULT = new Expressao(c.toString(),TipoVariavel.CHAR,false); :}
+              | INTEGER :c {: RESULT = new Expressao(c.toString(),TipoVariavel.INT,false); :}
+              | FLOAT :c {: RESULT = new Expressao(c.toString(),TipoVariavel.FLOAT,false); :}
+              | BOOLEAN :c {: RESULT = new Expressao(c.toString(),TipoVariavel.BOOL,false); :}
+              ;
+                
+expressao_condicional ::= expressao_or:exp {:RESULT = exp;:};
+
+expressao_or ::= expressao_and:exp {:RESULT = exp;:}
+				 | expressao_or:var1 OR expressao_and:var2 
+{:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "||", var1left, var1right, var2left, var2right);
+:}
+                 ;
+
+expressao_and ::= expressao_xor:exp {:RESULT = exp;:}
+			      | expressao_and:var1 AND expressao_xor:var2
+{:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "&&", var1left, var1right, var2left, var2right);
+:}
+                    ;
+
+expressao_xor ::= expressao_equalidade:exp {:RESULT = exp;:}
+				  | expressao_xor:var1 XOR expressao_equalidade:var2
+{:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "^", var1left, var1right, var2left, var2right);
+:}
+                    ;
+
+expressao_equalidade ::= expressao_relacional:exp {:RESULT = exp;:}
+                         | expressao_equalidade:var1 EQEQ expressao_relacional:var2  {:     
+        RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "==", var1left, var1right, var2left, var2right);
+:}
+                         | expressao_equalidade:var1 NOT EQ expressao_relacional:var2 {:     
+        RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "!=", var1left, var1right, var2left, var2right);
+:}
+                    ;
+
+expressao_relacional ::= expressao_aditiva:exp {:RESULT = exp;:}
+                         | expressao_relacional:var1 LESS_THAN expressao_aditiva:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "<", var1left, var1right, var2left, var2right);
+:}
+                         | expressao_relacional:var1 GREATER_THAN expressao_aditiva:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, ">", var1left, var1right, var2left, var2right);
+:}
+                         | expressao_relacional:var1 LESS_THAN EQ expressao_aditiva:var2  {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "<=", var1left, var1right, var2left, var2right);
+:}
+                         | expressao_relacional:var1 GREATER_THAN EQ expressao_aditiva:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, ">=", var1left, var1right, var2left, var2right);
+:}
+                    ;
+
+expressao_aditiva ::= expressao_multiplicativa:exp {:RESULT = exp;:}
+                      | expressao_aditiva:var1 ADDITION expressao_multiplicativa:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "+", var1left, var1right, var2left, var2right);
+:}
+                      | expressao_aditiva:var1 SUBTRACTION expressao_multiplicativa:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "-", var1left, var1right, var2left, var2right);
+:}
+                      ;
+
+expressao_multiplicativa ::= expressao_primaria:exp {:RESULT = exp;:}
+                             | expressao_multiplicativa:var1 MULTIPLICATION expressao_primaria:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "*", var1left, var1right, var2left, var2right);
+:}
+                             | expressao_multiplicativa:var1 DIVISION expressao_primaria:var2 {:     
+    RESULT = analisadorSemantico.testarExpressao((Expressao)var1, (Expressao)var2, "/", var1left, var1right, var2left, var2right);
+:}
+                             ;
+
+expressao_primaria ::= IDENTIFIER:var {:RESULT = new Expressao(var.toString(),null,true); :}
+                       | constante:var {:RESULT = var;:}
+                       ;
+/*adaptado de "instrucao_composta ::= { declaracao* instrucao* }" */
+instrucao_composta ::= CURLY_BRACKET_OPEN bloco_instrucao:inst CURLY_BRACKET_CLOSE
+{:RESULT = "{" + inst.toString() + "}";:}
+                     ;
+
+bloco_instrucao ::= /* empty */ {:RESULT = "";:}
+                  | declaracao:d bloco_instrucao:b {:RESULT = d.toString() + b;:}
+                  | instrucao:i bloco_instrucao:b {:RESULT = i.toString() + b;:}
+                  ;
+
+instrucao ::= expressao:e {:RESULT = e;:}
+              | instrucao_if:i {:RESULT = i;:}
+              | instrucao_iterativa:i {:RESULT = i;:}
+              | instrucao_pulo:i {:RESULT = i;:}
+		      | comando:c {:RESULT = c;:}
+              ;
+
+instrucao_if ::= IF PARENTHESES_OPEN expressao_condicional:exp PARENTHESES_CLOSE instrucao_composta:inst 
+{: RESULT = "if(" + ((Expressao)exp).resultado + ")" + inst;:}
+               | IF PARENTHESES_OPEN expressao_condicional:exp PARENTHESES_CLOSE instrucao_composta:inst1 ELSE instrucao_composta:inst2
+{: RESULT = "if(" + ((Expressao)exp).resultado + ")" + inst1 + " else " + inst2;:}
+               ;
+
+/*aqui o for aparece 4x porque o expressao condicional e expressao sao opcionais*/
+instrucao_iterativa ::= WHILE PARENTHESES_OPEN expressao_condicional:exp PARENTHESES_CLOSE instrucao_composta:inst 
+{: RESULT = "while(" + ((Expressao)exp).resultado + ")" + inst;:}
+                        | FOR PARENTHESES_OPEN expressao_atribuicao:atri SEMICOLON expressao_condicional:cond SEMICOLON expressao:exp PARENTHESES_CLOSE instrucao_composta:inst
+{: RESULT = "for(" + atri + ";" + cond + ";" + ((Expressao)exp).resultado + ")" + inst;:}
+                        | FOR PARENTHESES_OPEN expressao_atribuicao:atri SEMICOLON expressao_condicional:cond SEMICOLON PARENTHESES_CLOSE instrucao_composta:inst
+{: RESULT = "for(" + atri + ";" + cond + ";" + ")" + inst;:}
+                        | FOR PARENTHESES_OPEN expressao_atribuicao:atri SEMICOLON SEMICOLON expressao:exp PARENTHESES_CLOSE instrucao_composta:inst 
+{: RESULT = "for(" + atri + ";" + ";" + ((Expressao)exp).resultado + ")" + inst;:}
+                        | FOR PARENTHESES_OPEN expressao_atribuicao:atri SEMICOLON SEMICOLON PARENTHESES_CLOSE instrucao_composta:inst 
+{: RESULT = "for(" + atri + ";" + ";" + ")" + inst;:}
+                        ;
+                        
+instrucao_pulo ::= CONTINUE SEMICOLON {:RESULT = "continue;";:}
+                   | BREAK SEMICOLON {:RESULT = "break;";:}
+                   | RETURN expressao:exp SEMICOLON {:RESULT = "return" + exp + ";";:}
+                   ;
+
+comando ::= comando_print:r {:RESULT = r;:}
+          | comando_scan:r {:RESULT = r;:};
+
+comando_print ::= PRINT PARENTHESES_OPEN IDENTIFIER:id PARENTHESES_CLOSE SEMICOLON
+{: RESULT = "printf(\"%" + analisadorSemantico.obterCharDoTipo(analisadorSemantico.obterTipo(id)) + "\"," + id.toString() + ");"; :}
+			      | PRINT PARENTHESES_OPEN STRING:strg PARENTHESES_CLOSE SEMICOLON
+{: RESULT = "printf(\"" + strg.toString() + "\");"; :}
+                  ;
+
+comando_scan ::= SCAN PARENTHESES_OPEN IDENTIFIER:id PARENTHESES_CLOSE SEMICOLON 
+{: 
+    Identificador i = analisadorSemantico.obterIdentificador(id, idleft, idright);
+    if(i!=null) i.estaAtribuido = true;
+    RESULT = "scanf(\"%" + analisadorSemantico.obterCharDoTipo(analisadorSemantico.obterTipo(id)) + "\",&" + id.toString() + ");"; 
+:};
